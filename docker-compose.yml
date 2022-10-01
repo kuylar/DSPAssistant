@@ -1,0 +1,33 @@
+version: '3.7'
+
+services:
+  melody:
+    image: # fill this in yourself
+    restart: unless-stopped
+    environment:
+      - DISCORD_TOKEN= # Your Discord token
+      - POSTGRES_HOST=postgres
+      - POSTGRES_USERNAME=dspassistant
+      - POSTGRES_PASSWORD=hunter2
+      - POSTGRES_DB=dspassistant
+    networks:
+      - dspassistant
+    depends_on:
+      - postgres
+
+  postgres:
+    image: postgres:14
+    restart: always
+    environment:
+      - POSTGRES_USER=dspassistant
+      - POSTGRES_PASSWORD=hunter2
+      - POSTGRES_DB=dspassistant
+    networks:
+      - dspassistant
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data
+
+
+networks:
+  dspassistant:
+    external: false
