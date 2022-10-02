@@ -1,4 +1,5 @@
-﻿using DSharpPlus;
+﻿using System.Text.Json;
+using DSharpPlus;
 using DSharpPlus.Entities;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
@@ -8,12 +9,73 @@ namespace DSPAssistant;
 public class DatabaseContext : DbContext
 {
 	public DbSet<Suggestion> Suggestions { get; set; }
+	public DbSet<SuggestionEdit> EditHistory { get; set; }
 	public DbSet<Match> Matches { get; set; }
 	public DbSet<Vote> Votes { get; set; }
 
 	protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 	{
 		optionsBuilder.UseNpgsql(Utils.GetConnectionString());
+	}
+
+	protected override void OnModelCreating(ModelBuilder modelBuilder)
+	{
+		modelBuilder.Entity<SuggestionEdit>()
+			.Property(x => x.Suggestion)
+			.HasConversion(
+				x => JsonSerializer.Serialize(x, new JsonSerializerOptions()),
+				x => JsonSerializer.Deserialize<Suggestion>(x, new JsonSerializerOptions())!);
+	}
+
+	public void CreateSuggestion(Suggestion s, ulong createdBy)
+	{
+		Suggestion? suggestion = Suggestions.Find(s.Id);
+
+		if (suggestion is not null)
+			throw new KeyNotFoundException("Another suggestion with the same ID already exists");
+
+		EditHistory.Add(new SuggestionEdit
+		{
+			EditedBy = createdBy,
+			Suggestion = s,
+			When = DateTimeOffset.UtcNow
+		});
+		Suggestions.Add(s);
+		SaveChanges();
+	}
+
+	public void UpdateSuggestion(Suggestion s, ulong editedBy)
+	{
+		Suggestion? suggestion = Suggestions.AsNoTracking().FirstOrDefault(x => s.Id == x.Id);
+
+		if (suggestion is null)
+			throw new KeyNotFoundException("Cannot edit a suggestion that doesn't exist");
+
+		EditHistory.Add(new SuggestionEdit
+		{
+			EditedBy = editedBy,
+			Suggestion = s,
+			When = DateTimeOffset.UtcNow
+		});
+		Suggestions.Update(s);
+		SaveChanges();
+	}
+
+	public void DeleteSuggestion(Suggestion s, ulong deletedBy)
+	{
+		Suggestion? suggestion = Suggestions.Find(s.Id);
+
+		if (suggestion is null)
+			throw new KeyNotFoundException("Cannot delete a suggestion that doesn't exist");
+
+		EditHistory.Add(new SuggestionEdit
+		{
+			EditedBy = deletedBy,
+			Suggestion = null,
+			When = DateTimeOffset.UtcNow
+		});
+		Suggestions.Remove(s);
+		SaveChanges();
 	}
 
 	public int GetVotesForItem(string item) => Votes.Where(x => x.Item == item).Sum(x => x.Value);

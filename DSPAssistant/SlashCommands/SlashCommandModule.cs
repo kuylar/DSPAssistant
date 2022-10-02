@@ -23,7 +23,7 @@ public class SlashCommandModule : ApplicationCommandModule
 
 	[SlashCommand("delete", "Delete an auto-suggestion")]
 	public async Task Delete(InteractionContext context,
-		[Option("suggestion", "The suggestion to match", autocomplete: true)]
+		[Option("suggestion", "The suggestion to delete", autocomplete: true)]
 		[Autocomplete(typeof(SuggestionAutocompleteProvider))]
 		string suggestionId)
 	{
@@ -36,9 +36,26 @@ public class SlashCommandModule : ApplicationCommandModule
 			return;
 		}
 
-		db.Suggestions.Remove(suggestion);
-		await db.SaveChangesAsync();
+		db.DeleteSuggestion(suggestion, context.User.Id);
 		await context.CreateResponseAsync($"Removed auto-suggestion '`[{suggestion.Id}]` {suggestion.Synopsis}'");
+	}
+
+	[SlashCommand("edit", "Edit an auto-suggestion")]
+	public async Task Edit(InteractionContext context,
+		[Option("suggestion", "The suggestion to edit", autocomplete: true)]
+		[Autocomplete(typeof(SuggestionAutocompleteProvider))]
+		string suggestionId)
+	{
+		DatabaseContext db = Utils.CreateDatabaseContext();
+		Suggestion? suggestion = await db.Suggestions.FindAsync(suggestionId);
+
+		if (suggestion is null)
+		{
+			await context.CreateResponseAsync($"Failed to find a suggestion with ID `{suggestionId}`", true);
+			return;
+		}
+
+		await context.CreateResponseAsync(InteractionResponseType.Modal, Utils.BuildCreateSuggestionModal(suggestion));
 	}
 
 	[SlashCommand("add-match", "Add a keyword that matches a suggestion")]

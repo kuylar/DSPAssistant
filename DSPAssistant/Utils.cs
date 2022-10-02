@@ -89,7 +89,7 @@ public static class Utils
 				"the developers got a notification about this error and *should* fix it soon so it doesnt happen again");
 
 		if (exception is BadRequestException bre)
-			embed.AddField("More info", $"```\n{bre.JsonMessage}\n```\n```json\n{bre.Errors}```");
+			embed.AddField("More info", $"```\n{bre.JsonMessage}\n```\n```json\n{string.Join("", bre.Errors.Replace("  ", "\t").Take(500))}```");
 
 		return embed;
 	}

@@ -123,14 +123,27 @@ public static class EventHandlers
 			return;
 		}
 
+		string[] args = eventArgs.Interaction.Data.CustomId.Split(" ");
 		try
 		{
-			db.Suggestions.Add(s);
-			await db.SaveChangesAsync();
-			await eventArgs.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
-				new DiscordInteractionResponseBuilder()
-					.WithContent("Successfully created the following suggestion:")
-					.AddEmbed(s.BuildMessage().Embed));
+			if (args[0] == "editSuggestion")
+			{
+				s.Id = args[1];
+				db.UpdateSuggestion(s, eventArgs.Interaction.User.Id);
+				await eventArgs.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
+					new DiscordInteractionResponseBuilder()
+						.WithContent("Successfully edited the following suggestion:")
+						.AddEmbed(s.BuildMessage().Embed));
+			}
+			else
+			{
+				db.CreateSuggestion(s, eventArgs.Interaction.User.Id);
+				await db.SaveChangesAsync();
+				await eventArgs.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
+					new DiscordInteractionResponseBuilder()
+						.WithContent("Successfully created the following suggestion:")
+						.AddEmbed(s.BuildMessage().Embed));
+			}
 		}
 		catch (Exception e)
 		{
