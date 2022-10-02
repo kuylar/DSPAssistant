@@ -2,11 +2,8 @@
 using DSharpPlus;
 using DSharpPlus.ButtonCommands;
 using DSharpPlus.ButtonCommands.Extensions;
-using DSharpPlus.Entities;
 using DSharpPlus.SlashCommands;
 using DSPAssistant;
-using DSPAssistant.ButtonCommands;
-using Microsoft.EntityFrameworkCore;
 using Serilog;
 using Serilog.Extensions.Logging;
 
@@ -38,16 +35,18 @@ ButtonCommandsExtension bce = client.UseButtonCommands(new ButtonCommandsConfigu
 	ArgumentSeparator = "␞",
 	Prefix = "␁"
 });
-bce.RegisterButtons<VoteCommandsModule>();
-bce.RegisterButtons<ShowOtherResultModule>();
+bce.RegisterButtons(Assembly.GetExecutingAssembly());
 Utils.SetButtonCommands(bce);
 
-client.UseSlashCommands(new SlashCommandsConfiguration())
-	.RegisterCommands(Assembly.GetExecutingAssembly(), 917263628846108683);
+SlashCommandsExtension sce = client.UseSlashCommands(new SlashCommandsConfiguration());
+sce.RegisterCommands(Assembly.GetExecutingAssembly(), 917263628846108683);
 
 client.ThreadCreated += EventHandlers.OnThreadCreated;
 client.Ready += EventHandlers.OnReady;
 client.MessageCreated += EventHandlers.OnMessageCreated;
+client.ModalSubmitted += EventHandlers.OnModalSubmitted;
+bce.ButtonCommandErrored += EventHandlers.OnButtonCommandErrored;
+sce.SlashCommandErrored += EventHandlers.OnSlashCommandErrored;
 
 Log.Information("Logging into Discord...");
 await client.ConnectAsync();

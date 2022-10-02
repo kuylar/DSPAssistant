@@ -13,6 +13,7 @@ public class Suggestion
 	public string? CodeExample { get; set; }
 	public Uri? Image { get; set; }
 	public string[] RelatedProblems { get; set; }
+	public ulong CreatedBy { get; set; }
 
 	public DiscordMessageBuilder BuildMessage()
 	{
@@ -21,7 +22,7 @@ public class Suggestion
 		description.AppendLine(Description);
 
 		if (CodeExample is not null)
-			description.AppendLine("**Code Example:**\n")
+			description.AppendLine("\n**Code Example:**")
 				.AppendLine("```cs")
 				.AppendLine(CodeExample)
 				.AppendLine("```");
@@ -30,6 +31,7 @@ public class Suggestion
 		embed
 			.WithTitle($"Automated suggestion: {Synopsis}")
 			.WithDescription(description.ToString())
+			.WithColor(DiscordColor.Blurple)
 			.WithFooter(
 				"This action was performed automatically. Please use the buttons below to vote on your experience");
 
