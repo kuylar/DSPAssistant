@@ -39,7 +39,11 @@ bce.RegisterButtons(Assembly.GetExecutingAssembly());
 Utils.SetButtonCommands(bce);
 
 SlashCommandsExtension sce = client.UseSlashCommands(new SlashCommandsConfiguration());
+#if DEBUG
 sce.RegisterCommands(Assembly.GetExecutingAssembly(), 917263628846108683);
+#else
+sce.RegisterCommands(Assembly.GetExecutingAssembly(), 379378609942560770);
+#endif
 
 client.ThreadCreated += EventHandlers.OnThreadCreated;
 client.Ready += EventHandlers.OnReady;
