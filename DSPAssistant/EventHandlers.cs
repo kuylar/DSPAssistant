@@ -180,7 +180,7 @@ public static class EventHandlers
 		Log.Error(
 			eventArgs.Exception,
 			"Slash command {CommandName} errored!",
-			eventArgs.Context.Interaction.Data.Options.First().Name);
+			eventArgs.Context.Interaction.Data.Name);
 
 		DiscordEmbedBuilder embed = Utils.BuildExceptionEmbed(eventArgs.Exception);
 
