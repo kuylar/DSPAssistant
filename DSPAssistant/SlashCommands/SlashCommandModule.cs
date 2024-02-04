@@ -3,7 +3,8 @@ using DSharpPlus.SlashCommands;
 
 namespace DSPAssistant.SlashCommands;
 
-[SlashCommandGroup("autosuggestions", "Automated suggestions for the support channel", Permissions.ModerateMembers)]
+[SlashCommandGroup("autosuggestions", "Automated suggestions for the support channel")]
+[SlashCommandPermissions(Permissions.ModerateMembers)]
 public class SlashCommandModule : ApplicationCommandModule
 {
 	[SlashCommand("create", "Add a new auto-suggestion")]

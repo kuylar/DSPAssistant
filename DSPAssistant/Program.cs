@@ -15,7 +15,8 @@ DiscordClient client = new(new DiscordConfiguration
 {
 	Token = Environment.GetEnvironmentVariable("DISCORD_TOKEN") ??
 	        throw new Exception("Please set the DISCORD_TOKEN environment variable"),
-	LoggerFactory = new SerilogLoggerFactory(Log.Logger)
+	LoggerFactory = new SerilogLoggerFactory(Log.Logger),
+	Intents = DiscordIntents.AllUnprivileged | DiscordIntents.MessageContents
 });
 
 Utils.SetConnectionString(
