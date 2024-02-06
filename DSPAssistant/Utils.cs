@@ -1,4 +1,5 @@
-﻿using DSharpPlus;
+﻿using System.Text;
+using DSharpPlus;
 using DSharpPlus.ButtonCommands;
 using DSharpPlus.Entities;
 using DSharpPlus.Exceptions;
@@ -88,8 +89,16 @@ public static class Utils
 			.WithFooter(
 				"the developers got a notification about this error and *should* fix it soon so it doesnt happen again");
 
-		if (exception is BadRequestException bre)
-			embed.AddField("More info", $"```\n{bre.JsonMessage}\n```\n```json\n{string.Join("", bre.Errors.Replace("  ", "\t").Take(500))}```");
+		if (exception is BadRequestException bre) {
+			StringBuilder sb = new();
+			sb.AppendLine($"```\n{bre.JsonMessage}\n```");
+			if (!string.IsNullOrEmpty(bre.Errors)) {
+				sb.AppendLine($"```json\n{string.Join("", bre.Errors.Replace("  ", "\t").Take(500))}```");
+			}
+			embed.AddField("More info", sb.ToString());
+			Log.Information(bre.JsonMessage);
+			Log.Information(bre.Errors);
+		}
 
 		return embed;
 	}

@@ -1,5 +1,7 @@
 ﻿using DSharpPlus;
 using DSharpPlus.SlashCommands;
+using DSharpPlus.Exceptions;
+using Serilog;
 
 namespace DSPAssistant.SlashCommands;
 
@@ -84,5 +86,24 @@ public class SlashCommandModule : ApplicationCommandModule
 		await db.SaveChangesAsync();
 		await context.CreateResponseAsync(
 			$"Done! From now on, when I see '{keyword}', I will suggest '{suggestion.Synopsis}'");
+	}
+
+	[SlashCommand("delete-match", "Delete a keyword that matches a suggestion")]
+	public async Task DeleteMatch(InteractionContext context,
+		[Option("match", "Keyword - suggestion combo. Use autocomplete", autocomplete: true)]
+		[Autocomplete(typeof(MatchAutocompleteProvider))]
+		string matchId)
+	{
+		DatabaseContext db = Utils.CreateDatabaseContext();
+		Match? match = db.Matches.Find(Guid.Parse(matchId));
+		if (match is null)
+		{
+			await context.CreateResponseAsync($"Match `{matchId}` was not found.", true);
+			return;
+		}
+
+		db.Matches.Remove(match);
+		await db.SaveChangesAsync();
+		await context.CreateResponseAsync("https://tenor.com/view/disintegrating-funny-thanos-gif-22399978");
 	}
 }
