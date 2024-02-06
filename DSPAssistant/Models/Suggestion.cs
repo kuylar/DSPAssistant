@@ -15,7 +15,7 @@ public class Suggestion
 	public string[] RelatedProblems { get; set; }
 	public ulong CreatedBy { get; set; }
 
-	public DiscordMessageBuilder BuildMessage()
+	public DiscordMessageBuilder BuildMessage(DiscordUser? suggester = null)
 	{
 		StringBuilder description = new();
 
@@ -31,16 +31,28 @@ public class Suggestion
 		embed
 			.WithTitle($"Automated suggestion: {Synopsis}")
 			.WithDescription(description.ToString())
-			.WithColor(DiscordColor.Blurple)
-			.WithFooter(
-				"This action was performed automatically. Please use the buttons below to vote on your experience");
+			.WithColor(DiscordColor.Blurple);
+
+		if (suggester == null)
+		{
+			embed.WithTitle($"Automated suggestion: {Synopsis}")
+				.WithFooter(
+					"This action was performed automatically. Please use the buttons below to vote on your experience");
+		}
+		else
+		{
+			embed.WithTitle(Synopsis)
+				.WithFooter($"Suggested by {(suggester is DiscordMember mem ? mem.DisplayName : suggester.Username)}");
+		}
 
 		if (Image is not null)
 			embed.WithImageUrl(Image);
 
+
 		DiscordMessageBuilder? message = new DiscordMessageBuilder()
-			.AddEmbed(embed)
-			.AddComponents(
+			.AddEmbed(embed);
+		if (suggester == null)
+			message.AddComponents(
 				new DiscordButtonComponent(ButtonStyle.Success, Utils.GetButtonId("vote", 1, Id),
 					"Problem fixed!"),
 				new DiscordButtonComponent(ButtonStyle.Danger, Utils.GetButtonId("vote", -1, Id),

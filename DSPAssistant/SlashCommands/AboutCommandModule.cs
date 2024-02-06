@@ -20,4 +20,22 @@ public class AboutCommandModule : ApplicationCommandModule
 					.AddField("GitHub link", "https://github.com/kuylar/DSPAssistant", true)
 					.AddField("How cool are you", $"I'd say that you are about {context.User.Id.ToString()[13..15]}% cool", true)));
 	}
+
+	[SlashCommand("suggest", "Suggest a common problem")]
+	public async Task Edit(InteractionContext context,
+		[Option("suggestion", "The suggestion to suggest", autocomplete: true)]
+		[Autocomplete(typeof(SuggestionAutocompleteProvider))]
+		string suggestionId)
+	{
+		DatabaseContext db = Utils.CreateDatabaseContext();
+		Suggestion? suggestion = await db.Suggestions.FindAsync(suggestionId);
+
+		if (suggestion is null)
+		{
+			await context.CreateResponseAsync($"Failed to find a suggestion with ID `{suggestionId}`", true);
+			return;
+		}
+
+		await context.CreateResponseAsync(suggestion.BuildMessage(context.Member ?? context.User).Embed);
+	}
 }
